@@ -29,7 +29,7 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Create Account",
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
@@ -38,9 +38,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: usernameController,
                   decoration: InputDecoration(
                     labelText: "Username",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -48,9 +46,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   controller: emailController,
                   decoration: InputDecoration(
                     labelText: "Email",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -59,15 +55,14 @@ class _RegisterPageState extends State<RegisterPage> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Password",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
+                    child: const Text("Register"),
                     onPressed: () async {
                       try {
                         await _auth.createUserWithEmailAndPassword(
@@ -75,23 +70,24 @@ class _RegisterPageState extends State<RegisterPage> {
                           password: passwordController.text.trim(),
                         );
                         showMessage("Registration Successful!");
+
+                        Navigator.pushReplacementNamed(context, '/chat');
                       } catch (e) {
                         showMessage("Registration Failed!");
                       }
                     },
-                    child: Text("Register"),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Already have an account?"),
+                    const Text("Already have an account?"),
                     TextButton(
                       onPressed: () {
                         Navigator.pushNamed(context, '/signin');
                       },
-                      child: Text("Sign In"),
+                      child: const Text("Sign In"),
                     ),
                   ],
                 ),
@@ -103,3 +99,4 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 }
+

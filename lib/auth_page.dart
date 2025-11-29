@@ -33,20 +33,22 @@ class _AuthPageState extends State<AuthPage> {
             ElevatedButton(
               onPressed: () async {
                 try {
-                  UserCredential user = await _auth.signInWithEmailAndPassword(
+                  await _auth.signInWithEmailAndPassword(
                       email: email, password: password);
+
                   Navigator.pushReplacement(
                     context,
-                    MaterialPageRoute(builder: (_) => ChatPage(user: user.user!)),
+                    MaterialPageRoute(builder: (_) => const ChatPage()),
                   );
                 } catch (e) {
-                  // If login fails, try register
+                  // register if login fails
                   try {
-                    UserCredential user =
-                    await _auth.createUserWithEmailAndPassword(email: email, password: password);
+                    await _auth.createUserWithEmailAndPassword(
+                        email: email, password: password);
+
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (_) => ChatPage(user: user.user!)),
+                      MaterialPageRoute(builder: (_) => const ChatPage()),
                     );
                   } catch (err) {
                     ScaffoldMessenger.of(context)

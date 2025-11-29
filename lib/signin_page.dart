@@ -28,7 +28,7 @@ class _SignInPageState extends State<SignInPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Welcome Back",
                   style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 ),
@@ -37,9 +37,7 @@ class _SignInPageState extends State<SignInPage> {
                   controller: emailController,
                   decoration: InputDecoration(
                     labelText: "Email",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -48,15 +46,14 @@ class _SignInPageState extends State<SignInPage> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: "Password",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
+                    child: const Text("Sign In"),
                     onPressed: () async {
                       try {
                         await _auth.signInWithEmailAndPassword(
@@ -64,23 +61,24 @@ class _SignInPageState extends State<SignInPage> {
                           password: passwordController.text.trim(),
                         );
                         showMessage("Login Successful!");
+
+                        Navigator.pushReplacementNamed(context, '/chat');
                       } catch (e) {
                         showMessage("Login Failed!");
                       }
                     },
-                    child: Text("Sign In"),
                   ),
                 ),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Don't have an account?"),
+                    const Text("Don't have an account?"),
                     TextButton(
                       onPressed: () {
                         Navigator.pushNamed(context, '/register');
                       },
-                      child: Text("Register"),
+                      child: const Text("Register"),
                     ),
                   ],
                 ),
@@ -92,3 +90,4 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 }
+
