@@ -11,9 +11,12 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   void showMessage(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.green[700]),
+    );
   }
 
   @override
@@ -37,38 +40,69 @@ class _SignInPageState extends State<SignInPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green[50],
       body: Padding(
         padding: const EdgeInsets.all(24),
         child: Center(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                const Text("Welcome Back",
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                const Text(
+                  "Welcome Back",
+                  style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+                ),
                 const SizedBox(height: 30),
                 TextField(
                   controller: emailController,
-                  decoration:
-                  const InputDecoration(labelText: "Email", border: OutlineInputBorder()),
+                  decoration: const InputDecoration(
+                    labelText: "Email",
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email, color: Colors.green),
+                  ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: passwordController,
-                  obscureText: true,
-                  decoration:
-                  const InputDecoration(labelText: "Password", border: OutlineInputBorder()),
+                  obscureText: _obscurePassword,
+                  decoration: InputDecoration(
+                    labelText: "Password",
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.lock, color: Colors.green),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                        color: Colors.green,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _obscurePassword = !_obscurePassword;
+                        });
+                      },
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    child: const Text("Sign In"),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[700],
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    child: const Text(
+                      "Sign In",
+                      style: TextStyle(fontSize: 16,color: Colors.white),
+                    ),
                     onPressed: signIn,
                   ),
                 ),
                 TextButton(
-                  onPressed: () => Navigator.pushReplacementNamed(context, '/register'),
-                  child: const Text("Create new account"),
+                  onPressed: () =>
+                      Navigator.pushReplacementNamed(context, '/register'),
+                  child: const Text(
+                    "Create new account",
+                    style: TextStyle(color: Colors.green),
+                  ),
                 ),
               ],
             ),

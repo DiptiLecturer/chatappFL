@@ -36,10 +36,7 @@ class _PrivateChatPageState extends State<PrivateChatPage> {
         : '${widget.friendId}_${widget.currentUserId}';
     chatRef = FirebaseDatabase.instance.ref('chats/$chatId/messages');
 
-    // Typing indicator path
     typingRef = FirebaseDatabase.instance.ref('typingStatus/$chatId');
-
-    // Listen for friend's typing
     typingRef.child(widget.friendId).onValue.listen((event) {
       setState(() {
         isFriendTyping = (event.snapshot.value ?? false) as bool;
@@ -107,7 +104,7 @@ class _PrivateChatPageState extends State<PrivateChatPage> {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: isSelected ? Colors.blue[100] : Colors.grey[200],
+                      color: isSelected ? Colors.green[200] : Colors.green[50],
                     ),
                     child: Text(
                       reaction,
@@ -152,7 +149,9 @@ class _PrivateChatPageState extends State<PrivateChatPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green[50],
       appBar: AppBar(
+        backgroundColor: Colors.green[700],
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -204,7 +203,7 @@ class _PrivateChatPageState extends State<PrivateChatPage> {
                     margin: const EdgeInsets.symmetric(vertical: 4),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: isMe ? Colors.blueAccent : Colors.grey[300],
+                      color: isMe ? Colors.green[700] : Colors.green[100],
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Column(
@@ -232,8 +231,7 @@ class _PrivateChatPageState extends State<PrivateChatPage> {
                                     children: reactions
                                         .map((r) => Text(
                                       r,
-                                      style:
-                                      const TextStyle(fontSize: 18),
+                                      style: const TextStyle(fontSize: 18),
                                     ))
                                         .toList(),
                                   ),
@@ -264,7 +262,7 @@ class _PrivateChatPageState extends State<PrivateChatPage> {
             bottom: MediaQuery.of(context).viewInsets.bottom,
           ),
           child: Container(
-            color: Colors.white,
+            color: Colors.green[100],
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
             child: Row(
               children: [
@@ -272,13 +270,13 @@ class _PrivateChatPageState extends State<PrivateChatPage> {
                   child: TextField(
                     controller: _messageController,
                     onChanged: onMessageChanged,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: "Type a message...",
                       contentPadding:
-                      EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       filled: true,
-                      fillColor: Color(0xFFF0F0F0),
-                      border: OutlineInputBorder(
+                      fillColor: Colors.green[50],
+                      border: const OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(30)),
                         borderSide: BorderSide.none,
                       ),
@@ -287,7 +285,7 @@ class _PrivateChatPageState extends State<PrivateChatPage> {
                 ),
                 IconButton(
                   onPressed: sendMessage,
-                  icon: const Icon(Icons.send, color: Colors.blueAccent),
+                  icon: const Icon(Icons.send, color: Colors.green),
                 ),
               ],
             ),

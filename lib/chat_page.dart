@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
@@ -18,12 +19,12 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    setOnlineStatus(true); // Set online when page opens
+    setOnlineStatus(true);
   }
 
   @override
   void dispose() {
-    setOnlineStatus(false); // Set offline when page closes
+    setOnlineStatus(false);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -41,7 +42,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void setOnlineStatus(bool isOnline) {
     if (currentUser != null) {
-      usersRef.child(currentUser!.uid).update({'onlineStatus': isOnline});
+      usersRef.child(currentUser!.uid).update({
+        'onlineStatus': isOnline,
+        'username': currentUser?.displayName ?? currentUser!.email
+      });
     }
   }
 
@@ -67,13 +71,42 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
     }
   }
 
-  Widget buildAvatar(String? photoUrl, bool isOnline) {
+  String getInitials(String name) {
+    final parts = name.trim().split(' ');
+    if (parts.isEmpty) return "";
+    if (parts.length == 1) return parts[0][0].toUpperCase();
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+
+  Color getAvatarColor(String name) {
+    final hash = name.codeUnits.fold(0, (prev, elem) => prev + elem);
+    final colors = [
+      Colors.green[700]!,
+      Colors.green[500]!,
+      Colors.teal,
+      Colors.blue,
+      Colors.orange,
+      Colors.purple,
+      Colors.indigo,
+      Colors.brown,
+    ];
+    return colors[hash % colors.length];
+  }
+
+  Widget buildAvatar(String name, bool isOnline) {
+    final initials = getInitials(name);
+    final bgColor = getAvatarColor(name);
+
     return Stack(
       children: [
         CircleAvatar(
           radius: 30,
-          backgroundColor: Colors.grey[300],
-          child: const Icon(Icons.person, size: 30),
+          backgroundColor: bgColor,
+          child: Text(
+            initials,
+            style: const TextStyle(
+                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+          ),
         ),
         Positioned(
           bottom: 0,
@@ -95,8 +128,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.green[50], // soft green background
       appBar: AppBar(
         title: const Text("Chat"),
+        backgroundColor: Colors.green[700],
         actions: [
           IconButton(onPressed: logout, icon: const Icon(Icons.logout)),
         ],
@@ -116,25 +151,27 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
               .toList();
 
           final currentUserData = data[currentUser!.uid] ?? {};
+          final myName = currentUserData['username'] != null &&
+              currentUserData['username'].toString().trim() != ''
+              ? currentUserData['username']
+              : (currentUser?.displayName ?? currentUser?.email ?? "User");
 
           return Column(
             children: [
               // My Profile Section
               Container(
-                color: Colors.grey[200],
-                padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                color: Colors.green[100],
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Row(
                   children: [
-                    buildAvatar(
-                        currentUserData['photoUrl'],
-                        currentUserData['onlineStatus'] ?? false),
+                    buildAvatar(myName,
+                        currentUserData['onlineStatus'] ?? true),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          currentUser?.displayName ?? "You",
+                          myName,
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -149,7 +186,6 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   ],
                 ),
               ),
-
               const Divider(height: 1),
 
               // Friends List
@@ -160,10 +196,11 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                   itemCount: users.length,
                   itemBuilder: (context, index) {
                     final user = users[index];
+                    final userName = user['username'] ?? "Unknown";
                     final isOnline = user['onlineStatus'] ?? false;
                     return ListTile(
-                      leading: buildAvatar(user['photoUrl'], isOnline),
-                      title: Text(user['username']),
+                      leading: buildAvatar(userName, isOnline),
+                      title: Text(userName),
                       subtitle: Text(user['email']),
                       onTap: () {
                         Navigator.push(
@@ -172,7 +209,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                             builder: (_) => PrivateChatPage(
                               currentUserId: currentUser!.uid,
                               friendId: user['uid'],
-                              friendName: user['username'],
+                              friendName: userName,
                             ),
                           ),
                         );
