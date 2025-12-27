@@ -51,19 +51,16 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   void logout() async {
     final confirm = await showDialog<bool>(
-        context: context,
-        builder: (_) => AlertDialog(
-          title: const Text("Logout"),
-          content: const Text("Are you sure you want to logout?"),
-          actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: const Text("Cancel")),
-            TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: const Text("Logout")),
-          ],
-        ));
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text("Logout")),
+        ],
+      ),
+    );
     if (confirm == true) {
       setOnlineStatus(false);
       await FirebaseAuth.instance.signOut();
@@ -80,16 +77,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
 
   Color getAvatarColor(String name) {
     final hash = name.codeUnits.fold(0, (prev, elem) => prev + elem);
-    final colors = [
-      Colors.green[700]!,
-      Colors.green[500]!,
-      Colors.teal,
-      Colors.blue,
-      Colors.orange,
-      Colors.purple,
-      Colors.indigo,
-      Colors.brown,
-    ];
+    final colors = [Colors.red, Colors.green, Colors.blue, Colors.orange, Colors.purple, Colors.teal, Colors.indigo, Colors.brown];
     return colors[hash % colors.length];
   }
 
@@ -105,7 +93,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
           child: Text(
             initials,
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 20,
+            ),
           ),
         ),
         Positioned(
@@ -128,10 +119,10 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.green[50], // soft green background
+      backgroundColor: Colors.green[50],
       appBar: AppBar(
-        title: const Text("Chat"),
         backgroundColor: Colors.green[700],
+        title: const Text("Chat"),
         actions: [
           IconButton(onPressed: logout, icon: const Icon(Icons.logout)),
         ],
@@ -143,29 +134,31 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
             return const Center(child: Text("No users found"));
           }
 
-          final data =
-          Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
-          final users = data.entries
-              .where((e) => e.key != currentUser!.uid)
-              .map((e) => Map<String, dynamic>.from(e.value))
-              .toList();
+          final rawData = snapshot.data!.snapshot.value;
+          final data = rawData is Map ? Map<String, dynamic>.from(rawData) : <String, dynamic>{};
 
+          // Extract current user data
           final currentUserData = data[currentUser!.uid] ?? {};
           final myName = currentUserData['username'] != null &&
               currentUserData['username'].toString().trim() != ''
               ? currentUserData['username']
               : (currentUser?.displayName ?? currentUser?.email ?? "User");
 
+          // Build user list excluding current user
+          final users = data.entries
+              .where((e) => e.key != currentUser!.uid && e.value != null)
+              .map((e) => Map<String, dynamic>.from(e.value))
+              .toList();
+
           return Column(
             children: [
-              // My Profile Section
+              // Current User Profile Section
               Container(
                 color: Colors.green[100],
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                 child: Row(
                   children: [
-                    buildAvatar(myName,
-                        currentUserData['onlineStatus'] ?? true),
+                    buildAvatar(myName, currentUserData['onlineStatus'] ?? true),
                     const SizedBox(width: 16),
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -178,8 +171,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                         const SizedBox(height: 4),
                         Text(
                           currentUser?.email ?? "",
-                          style: const TextStyle(
-                              fontSize: 14, color: Colors.black54),
+                          style: const TextStyle(fontSize: 14, color: Colors.black54),
                         ),
                       ],
                     ),
@@ -201,7 +193,7 @@ class _ChatPageState extends State<ChatPage> with WidgetsBindingObserver {
                     return ListTile(
                       leading: buildAvatar(userName, isOnline),
                       title: Text(userName),
-                      subtitle: Text(user['email']),
+                      subtitle: Text(user['email'] ?? ""),
                       onTap: () {
                         Navigator.push(
                           context,
