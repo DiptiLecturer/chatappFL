@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'private_chat_page.dart';
 
 class ChatPage extends StatefulWidget {
   const ChatPage({super.key});
@@ -8,74 +11,76 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final TextEditingController _messageController = TextEditingController();
-  final List<String> messages = [];
+  final User? currentUser = FirebaseAuth.instance.currentUser;
+  final DatabaseReference usersRef = FirebaseDatabase.instance.ref("users");
+
+  void logout() async {
+    final confirm = await showDialog<bool>(
+        context: context,
+        builder: (_) => AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("Cancel")),
+            TextButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text("Logout")),
+          ],
+        ));
+    if (confirm == true) {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacementNamed(context, '/signin');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Chat App"),
-        backgroundColor: Colors.blue,
-      ),
-      body: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.all(10),
-              itemCount: messages.length,
-              itemBuilder: (context, index) {
-                return Align(
-                  alignment: Alignment.centerRight,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      messages[index],
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-
-          // Message Input
-          Container(
-            padding: const EdgeInsets.all(10),
-            child: Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      hintText: "Enter message...",
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 10),
-
-                // Send Button
-                IconButton(
-                  icon: const Icon(Icons.send, size: 30),
-                  onPressed: () {
-                    if (_messageController.text.isNotEmpty) {
-                      setState(() {
-                        messages.add(_messageController.text);
-                        _messageController.clear();
-                      });
-                    }
-                  },
-                ),
-              ],
-            ),
-          )
+        title: const Text("Chat"),
+        actions: [
+          IconButton(onPressed: logout, icon: const Icon(Icons.logout)),
         ],
+      ),
+      body: StreamBuilder<DatabaseEvent>(
+        stream: usersRef.onValue,
+        builder: (context, snapshot) {
+          if (!snapshot.hasData || snapshot.data!.snapshot.value == null) {
+            return const Center(child: Text("No users found"));
+          }
+
+          final data = Map<String, dynamic>.from(snapshot.data!.snapshot.value as Map);
+          final users = data.entries
+              .where((e) => e.key != currentUser!.uid)
+              .map((e) => Map<String, dynamic>.from(e.value))
+              .toList();
+
+          if (users.isEmpty) return const Center(child: Text("No friends found"));
+
+          return ListView.builder(
+            itemCount: users.length,
+            itemBuilder: (context, index) {
+              final user = users[index];
+              return ListTile(
+                leading: const CircleAvatar(child: Icon(Icons.person)),
+                title: Text(user['username']),
+                subtitle: Text(user['email']),
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => PrivateChatPage(
+                            currentUserId: currentUser!.uid,
+                            friendId: user['uid'],
+                            friendName: user['username'],
+                          )));
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
